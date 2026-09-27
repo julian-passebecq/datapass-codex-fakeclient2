@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Synthetic blade viewer</title><style>
+body{font:16px system-ui,sans-serif;margin:0;background:#f5f7f9;color:#20323e}main{max-width:960px;margin:auto;padding:24px}canvas{width:100%;height:480px;background:white;border:1px solid #bdcbd3;border-radius:8px;touch-action:none}label{display:inline-block;margin:12px 16px 12px 0}input[type=range]{vertical-align:middle}#status{min-height:1.5em}button{padding:8px 14px}small{display:block;line-height:1.6}
+</style></head><body><main><h1>Synthetic blade viewer</h1>
+<p>Rectangular lofted sections, not an engineered blade. Metres; span is the z-axis.</p>
+<label>Open OBJ <input id="file" type="file" accept=".obj,text/plain"></label><button id="load">Load generated out/blade_v1.obj</button>
+<div><label>Rotate <input id="angle" type="range" min="-180" max="180" value="30" aria-label="Rotation in degrees"></label></div>
+<p id="status" role="status">Loading generated OBJ...</p><canvas id="view" width="920" height="480" aria-label="Orthographic 3D triangle mesh"></canvas>
+<small>Run <code>python -m blade3d</code> then <code>python -m http.server 8000</code> in the repository root and open <code>/viewer/</code>. Opening this HTML offline also works: select a generated OBJ with Open OBJ. No CDN or build step.</small>
+</main><script type="module">
+const canvas=document.querySelector('#view'),ctx=canvas.getContext('2d'),status=document.querySelector('#status');
+let mesh=null;
+function parse(text){
+ const vertices=[],faces=[];
+ for(const line of text.split(/\r?\n/)){
+  const p=line.trim().split(/\s+/);
+  if(p[0]==='v'){
+   const v=p.slice(1).map(Number);if(v.length!==3||!v.every(Number.isFinite))throw new Error('Invalid vertex');vertices.push(v);
+  }else if(p[0]==='f'){
+   const f=p.slice(1).map(s=>Number(s.split('/')[0])-1);if(f.length!==3||!f.every(Number.isInteger))throw new Error('Only triangle faces are supported');faces.push(f);
+  }
+ }
+ if(!vertices.length||!faces.length||!faces.every(f=>f.every(i=>i>=0&&i<vertices.length)))throw new Error('Empty mesh or invalid face index');
+ if(vertices.length>100000||faces.length>200000)throw new Error('Mesh too large for this teaching viewer');
+ return {vertices,faces};
+}
+function draw(){
+ ctx.clearRect(0,0,canvas.width,canvas.height);if(!mesh)return;
+ const a=Number(document.querySelector('#angle').value)*Math.PI/180;
+ const points=mesh.vertices.map(([x,y,z])=>[x*Math.cos(a)-y*Math.sin(a),z*0.94+(x*Math.sin(a)+y*Math.cos(a))*0.34]);
+ const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]);
+ const xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys);
+ const scale=Math.min((canvas.width-100)/Math.max(0.01,xmax-xmin),(canvas.height-70)/Math.max(0.01,ymax-ymin));
+ const project=([x,y])=>[(x-(xmin+xmax)/2)*scale+canvas.width/2,canvas.height/2-(y-(ymin+ymax)/2)*scale];
+ ctx.strokeStyle='#166b8c';ctx.lineWidth=1.1;
+ for(const f of mesh.faces){ctx.beginPath();f.forEach((i,j)=>{const [x,y]=project(points[i]);j?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.closePath();ctx.stroke()}
+}
+function show(text){mesh=parse(text);status.textContent=`Synthetic mesh: ${mesh.vertices.length} vertices, ${mesh.faces.length} triangles`;draw()}
+async function load(){try{const r=await fetch('../out/blade_v1.obj');if(!r.ok)throw new Error(`HTTP ${r.status}`);show(await r.text())}catch(e){status.textContent=`No generated OBJ loaded (${e.message}). Generate it or use Open OBJ.`}}
+document.querySelector('#load').addEventListener('click',load);
+document.querySelector('#angle').addEventListener('input',draw);
+document.querySelector('#file').addEventListener('change',async e=>{try{const f=e.target.files[0];if(f){if(f.size>10000000)throw new Error('File exceeds 10 MB');show(await f.text())}}catch(err){status.textContent=err.message}});
+load();
+</script></body></html>

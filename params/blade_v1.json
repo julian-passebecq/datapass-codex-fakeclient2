@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "synthetic": true,
+  "length_m": 3.0,
+  "thickness_ratio": 0.12,
+  "stations": [
+    {
+      "span_m": 0.0,
+      "chord_m": 0.6,
+      "twist_deg": 20.0
+    },
+    {
+      "span_m": 1.0,
+      "chord_m": 0.45,
+      "twist_deg": 12.0
+    },
+    {
+      "span_m": 2.0,
+      "chord_m": 0.3,
+      "twist_deg": 6.0
+    },
+    {
+      "span_m": 3.0,
+      "chord_m": 0.15,
+      "twist_deg": 0.0
+    }
+  ]
+}

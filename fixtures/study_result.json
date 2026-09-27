@@ -1,0 +1,25 @@
+{
+  "version": "1.0",
+  "synthetic": true,
+  "result_id": "f50fc738b65b9a2a598be7700e046843c9d9004efe097eb1c257823c3297058c",
+  "source_sha256": "18c52dc420aa0c8347f7630243aed8f09e64121c189fee5fe44acf531ead2a80",
+  "sample_count": 1000,
+  "duration_hours": 1000,
+  "parameters": {
+    "rated_power_kw": 10.0,
+    "cut_in_mps": 3.0,
+    "rated_speed_mps": 12.0,
+    "cut_out_mps": 25.0,
+    "annualization_hours": 8760
+  },
+  "mean_wind_speed_mps": 9.96104,
+  "mean_power_kw": 5.591877048589065,
+  "sample_energy_kwh": 5591.877048589065,
+  "annual_energy_kwh_estimate": 48984.842945640215,
+  "lift_example": {
+    "alpha_deg": 5.0,
+    "stall_deg": 15.0,
+    "cl": 0.5483113556160755
+  },
+  "limitations": "Synthetic hours; fixed 8760-hour extrapolation; no availability, wake, density or uncertainty model. Not measured AEP."
+}
